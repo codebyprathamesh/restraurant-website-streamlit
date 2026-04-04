@@ -1,55 +1,88 @@
 import streamlit as st
+import sqlite3
+from datetime import date
 
-# Page config
+# --- DATABASE SETUP ---
+conn = sqlite3.connect("restaurant.db", check_same_thread=False)
+c = conn.cursor()
+
+c.execute("""
+CREATE TABLE IF NOT EXISTS reservations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    people INTEGER,
+    booking_date TEXT
+)
+""")
+conn.commit()
+
+# --- FUNCTIONS ---
+def add_reservation(name, people, booking_date):
+    c.execute("INSERT INTO reservations (name, people, booking_date) VALUES (?, ?, ?)",
+              (name, people, booking_date))
+    conn.commit()
+
+def get_reservations():
+    c.execute("SELECT * FROM reservations")
+    return c.fetchall()
+
+# --- UI ---
 st.set_page_config(page_title="Restaurant Website", layout="wide")
 
-# --- HEADER ---
-st.title("🍽️ Welcome to Spice Delight")
-st.subheader("Delicious Food | Great Ambience | Fast Service")
+st.title("🍽️ Spice Delight Restaurant")
 
-st.image("https://images.unsplash.com/photo-1555396273-367ea4eb4db5", use_column_width=True)
+menu = ["Home", "Menu", "Gallery", "Book Table", "Admin"]
+choice = st.sidebar.selectbox("Navigation", menu)
 
-# --- MENU SECTION ---
-st.header("📜 Our Menu")
+# --- HOME ---
+if choice == "Home":
+    st.header("Welcome!")
+    st.write("Enjoy delicious food and great service.")
 
-menu = {
-    "Starters": ["Paneer Tikka - ₹250", "Veg Manchurian - ₹200", "Spring Rolls - ₹180"],
-    "Main Course": ["Butter Paneer - ₹300", "Veg Biryani - ₹220", "Dal Tadka - ₹180"],
-    "Desserts": ["Gulab Jamun - ₹120", "Ice Cream - ₹100", "Brownie - ₹150"]
-}
-
-for category, items in menu.items():
-    st.subheader(category)
-    for item in items:
-        st.write("•", item)
+# --- MENU ---
+elif choice == "Menu":
+    st.header("📜 Our Menu")
+    st.write("Paneer Tikka - ₹250")
+    st.write("Veg Biryani - ₹220")
+    st.write("Gulab Jamun - ₹120")
 
 # --- GALLERY ---
-st.header("📸 Gallery")
+elif choice == "Gallery":
+    st.header("📸 Gallery")
+    st.image("https://images.unsplash.com/photo-1555396273-367ea4eb4db5")
 
-col1, col2, col3 = st.columns(3)
+# --- BOOK TABLE ---
+elif choice == "Book Table":
+    st.header("📅 Reserve Your Table")
 
-with col1:
-    st.image("https://images.unsplash.com/photo-1600891964599-f61ba0e24092")
+    name = st.text_input("Your Name")
+    people = st.number_input("Number of People", min_value=1, max_value=20)
+    booking_date = st.date_input("Select Date", min_value=date.today())
 
-with col2:
-    st.image("https://images.unsplash.com/photo-1540189549336-e6e99c3679fe")
+    if st.button("Reserve"):
+        if name:
+            add_reservation(name, people, str(booking_date))
+            st.success("✅ Table booked successfully!")
+        else:
+            st.error("Please enter your name")
 
-with col3:
-    st.image("https://images.unsplash.com/photo-1555939594-58d7cb561ad1")
+# --- ADMIN PANEL ---
+elif choice == "Admin":
+    st.header("🔐 Admin Panel")
 
-# --- CONTACT ---
-st.header("📍 Contact Us")
+    password = st.text_input("Enter Admin Password", type="password")
 
-st.write("📞 Phone: +91 9876543210")
-st.write("📍 Location: Mumbai, India")
-st.write("⏰ Timings: 10 AM - 11 PM")
+    if password == "admin123":   # change this later
+        st.success("Access Granted")
 
-# --- RESERVATION ---
-st.header("📅 Book a Table")
+        data = get_reservations()
 
-name = st.text_input("Your Name")
-people = st.number_input("Number of People", min_value=1, max_value=20)
-date = st.date_input("Select Date")
+        if data:
+            st.subheader("📋 All Reservations")
+            for row in data:
+                st.write(f"ID: {row[0]} | Name: {row[1]} | People: {row[2]} | Date: {row[3]}")
+        else:
+            st.info("No reservations yet")
 
-if st.button("Reserve"):
-    st.success(f"Table booked for {name} on {date} for {people} people!")
+    elif password:
+        st.error("Wrong Password")
