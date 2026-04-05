@@ -1,6 +1,4 @@
-st.cache_data.clear()
-st.cache_resource.clear()
-st.title("🔥 NEW VERSION CHECK 🔥")
+
 import streamlit as st
 import sqlite3
 from datetime import date
