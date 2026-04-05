@@ -1,3 +1,5 @@
+st.cache_data.clear()
+st.cache_resource.clear()
 import streamlit as st
 import sqlite3
 from datetime import date
@@ -9,7 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # --- DATABASE ---
-conn = sqlite3.connect("restaurant.db", check_same_thread=False)
+conn = sqlite3.connect("restaurant1.db", check_same_thread=False)
 c = conn.cursor()
 
 c.execute("""
