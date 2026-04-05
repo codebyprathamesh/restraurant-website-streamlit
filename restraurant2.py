@@ -39,7 +39,7 @@ def create_admin():
         password = "admin123".encode()
         hashed = bcrypt.hashpw(password, bcrypt.gensalt())
         c.execute("INSERT INTO admin (email, password) VALUES (?, ?)",
-                  ("admin@gmail.com", hashed))
+                  ("prathameshmore104@gmail.com", hashed))
         conn.commit()
 
 create_admin()
